@@ -57,13 +57,13 @@
 # $$
 # for a regularization parameter $\epsilon>0$. We localize the square-root operator by a Padé approximation. Details of this OSRC operator are given in <a href='https://doi.org/10.1051/m2an:2007009' target='new'>Antoine & Darbas (2007)</a>.
 #
-# The OSRC-approximated NtD operator and its inverse the Dirichlet-to-Neumann operator are available in Bempp. This notebook demonstrates how to use these for high-frequency scattering computations.
+# The OSRC-approximated NtD operator and its inverse the Dirichlet-to-Neumann operator are available in bempp_cl. This notebook demonstrates how to use these for high-frequency scattering computations.
 #
 # ## Implementation
 #
 # Let us start with importing the relevant libraries.
 
-import bempp.api
+import bempp_cl.api
 import numpy as np
 
 # The following defines the wavenumber $k$ and the Dirichlet and Neumann data of the incident plane wave travelling in the positive $x$ direction. Notice that we need both traces in the Burton-Miller formulation.
@@ -74,12 +74,12 @@ k = 7
 
 
 # +
-@bempp.api.complex_callable
+@bempp_cl.api.complex_callable
 def dirichlet_fun(x, n, domain_index, result):
     result[0] = np.exp(1j * k * x[0])
 
 
-@bempp.api.complex_callable
+@bempp_cl.api.complex_callable
 def neumann_fun(x, n, domain_index, result):
     result[0] = 1j * k * n[0] * np.exp(1j * k * x[0])
 
@@ -91,19 +91,19 @@ def neumann_fun(x, n, domain_index, result):
 # +
 wavelength = 2 * np.pi / k
 h = wavelength / 6
-grid = bempp.api.shapes.ellipsoid(3, 1, 1, h=h)
+grid = bempp_cl.api.shapes.ellipsoid(3, 1, 1, h=h)
 
-space = bempp.api.function_space(grid, "P", 1)
+space = bempp_cl.api.function_space(grid, "P", 1)
 print("The discrete function space has {0} degrees of freedom.".format(space.global_dof_count))
 # -
 
 # We can now form the Burton-Miller operator and its OSRC-preconditioned variant. The NtD operator only works for continuous function spaces as the OSRC approximation assembles a Laplace-Beltrami operator. Optionally, the damped wavenumber $k + \imath\epsilon$ in the OSRC approximation, and the number of expansion terms and branch cut angle for the Padé series can be specified for the NtD operator to fine-tune its accuracy.
 
 # +
-identity = bempp.api.operators.boundary.sparse.identity(space, space, space)
-dlp = bempp.api.operators.boundary.helmholtz.double_layer(space, space, space, k)
-hyp = bempp.api.operators.boundary.helmholtz.hypersingular(space, space, space, k)
-ntd = bempp.api.operators.boundary.helmholtz.osrc_ntd(space, k)
+identity = bempp_cl.api.operators.boundary.sparse.identity(space, space, space)
+dlp = bempp_cl.api.operators.boundary.helmholtz.double_layer(space, space, space, k)
+hyp = bempp_cl.api.operators.boundary.helmholtz.hypersingular(space, space, space, k)
+ntd = bempp_cl.api.operators.boundary.helmholtz.osrc_ntd(space, k)
 
 burton_miller = 0.5 * identity - dlp + (1j / k) * hyp
 osrc_bm = 0.5 * identity - dlp - ntd * hyp
@@ -112,8 +112,8 @@ osrc_bm = 0.5 * identity - dlp - ntd * hyp
 # We next assemble the right-hand side, which also includes the OSRC operator.
 
 # +
-dirichlet_grid_fun = bempp.api.GridFunction(space, fun=dirichlet_fun)
-neumann_grid_fun = bempp.api.GridFunction(space, fun=neumann_fun)
+dirichlet_grid_fun = bempp_cl.api.GridFunction(space, fun=dirichlet_fun)
+neumann_grid_fun = bempp_cl.api.GridFunction(space, fun=neumann_fun)
 
 rhs_fun_bm = dirichlet_grid_fun + (1j / k) * neumann_grid_fun
 rhs_fun_osrc = dirichlet_grid_fun - ntd * neumann_grid_fun
@@ -122,15 +122,11 @@ rhs_fun_osrc = dirichlet_grid_fun - ntd * neumann_grid_fun
 # We can now solve the Burton-Miller formulation using GMRES. We use a strong form discretisation: this automatically performs mass matrix preconditioning of the entire linear system.
 
 # +
-from bempp.api.linalg import gmres
+from bempp_cl.api.linalg import gmres
 
-sol_bm, info, it_count_bm = gmres(
-    burton_miller, rhs_fun_bm, use_strong_form=True, return_iteration_count=True
-)
+sol_bm, info, it_count_bm = gmres(burton_miller, rhs_fun_bm, use_strong_form=True, return_iteration_count=True)
 
-sol_osrc, info, it_count_osrc = gmres(
-    osrc_bm, rhs_fun_osrc, use_strong_form=True, return_iteration_count=True
-)
+sol_osrc, info, it_count_osrc = gmres(osrc_bm, rhs_fun_osrc, use_strong_form=True, return_iteration_count=True)
 
 print("The linear system was solved in")
 print("  {0} iterations for the Burton-Miller formulation, and".format(it_count_bm))
@@ -139,13 +135,13 @@ print("  {0} iterations with the OSRC preconditioner.".format(it_count_osrc))
 
 # The number of iterations is indeed smaller when using the OSRC preconditioner, without incurring much computational overhead.
 #
-# We now want to plot the radar cross section in the $z=0$ plane. To compute it we use the far-field operators implemented in Bempp.
+# We now want to plot the radar cross section in the $z=0$ plane. To compute it we use the far-field operators implemented in bempp_cl.
 
 # +
 theta = np.linspace(0, 2 * np.pi, 400)
 points = np.array([np.cos(theta), np.sin(theta), np.zeros(len(theta))])
 
-dlp_far_field = bempp.api.operators.far_field.helmholtz.double_layer(space, points, k)
+dlp_far_field = bempp_cl.api.operators.far_field.helmholtz.double_layer(space, points, k)
 far_field = dlp_far_field * sol_osrc
 
 max_incident = np.max(np.abs(dirichlet_grid_fun.coefficients))

@@ -29,7 +29,7 @@
 # $$
 # \left[\tfrac{1}{2}\mathsf{Id} - \mathsf{A}\right]V=V.
 # $$
-# Furthermore, from the above properties it follows that $(2\mathsf{A})^2 = \mathsf{Id}$. Hence, this operator is self-regularising. This property is heavily used in <a href='https://bempp.com/2017/07/13/electric-field-integral-equation-efie/'>Calder&oacute;n preconditioning</a>.
+# Furthermore, from the above properties it follows that $(2\mathsf{A})^2 = \mathsf{Id}$. Hence, this operator is self-regularising. This property is heavily used in <a href='https://bempp_cl.com/2017/07/13/electric-field-integral-equation-efie/'>Calder&oacute;n preconditioning</a>.
 #
 # Now let $\mathsf{A}^\text{--}$ be the multitrace operator for an interior Helmholtz problem with wavenumber $k^\text{--}$ and $A^\text{+}$ be the multitrace operator for an exterior Helmholtz problem with wavenumber $k^\text{+}$. Let $V^\text{inc}:= [u^\text{inc}, u_\nu^\text{inc}]$ be the boundary data of an incident wave (eg a plane wave). It follows from the properties of the multitrace operator that the solution pair of the Helmholtz scattering problem $V$ satisfies
 # $$
@@ -53,7 +53,7 @@
 #
 # We start with the ususal imports.
 
-import bempp.api
+import bempp_cl.api
 import numpy as np
 
 # The following defines the wavenumber and the grid. We use roughly 10 elements per wavelength. The wavenumber in the interior domain is $n * k$, where $n$ is a refractive index.
@@ -61,18 +61,18 @@ import numpy as np
 k = 2
 n = 0.5
 h = 2 * np.pi / (10 * k)
-grid = bempp.api.shapes.ellipsoid(1.5, 1, 1, h=h)
+grid = bempp_cl.api.shapes.ellipsoid(1.5, 1, 1, h=h)
 
 # We now define the Dirichlet and Neumann data of the incident wave.
 
 
 # +
-@bempp.api.complex_callable
+@bempp_cl.api.complex_callable
 def dirichlet_fun(x, n, domain_index, result):
     result[0] = np.exp(1j * k * x[0])
 
 
-@bempp.api.complex_callable
+@bempp_cl.api.complex_callable
 def neumann_fun(x, n, domain_index, result):
     result[0] = 1j * k * n[0] * np.exp(1j * k * x[0])
 
@@ -82,8 +82,8 @@ def neumann_fun(x, n, domain_index, result):
 # The following code defines the interior and exterior multitrace operators. In particular, the operator product is interesting. Bempp handles all occuring mass matrices automatically. The assembly of a multitrace operator is efficient in the sense that only one single layer and one double layer operator need to be assembled. All others are derived from those two. The ``multitrace_operator`` method uses the correct spaces for the Dirichlet and Neumann data. To access these spaces we just access the spaces of the component operators.
 
 # +
-Ai = bempp.api.operators.boundary.helmholtz.multitrace_operator(grid, n * k)
-Ae = bempp.api.operators.boundary.helmholtz.multitrace_operator(grid, k)
+Ai = bempp_cl.api.operators.boundary.helmholtz.multitrace_operator(grid, n * k)
+Ae = bempp_cl.api.operators.boundary.helmholtz.multitrace_operator(grid, k)
 
 op = Ai + Ae
 op_squared = op * op
@@ -94,8 +94,8 @@ neumann_space = Ai[0, 1].domain
 
 # We need to discretise the incident field into grid functions.
 
-dirichlet_grid_fun = bempp.api.GridFunction(dirichlet_space, fun=dirichlet_fun)
-neumann_grid_fun = bempp.api.GridFunction(neumann_space, fun=neumann_fun)
+dirichlet_grid_fun = bempp_cl.api.GridFunction(dirichlet_space, fun=dirichlet_fun)
+neumann_grid_fun = bempp_cl.api.GridFunction(neumann_space, fun=neumann_fun)
 
 # The following discretises the left-hand side operator and the right-hand side vector.
 
@@ -119,8 +119,8 @@ def iteration_counter(x):
 x, info = gmres(op_discrete_squared, rhs, callback=iteration_counter)
 print("The linear system was solved in {0} iterations".format(it_count))
 
-total_field_dirichlet = bempp.api.GridFunction(dirichlet_space, coefficients=x[: dirichlet_space.global_dof_count])
-total_field_neumann = bempp.api.GridFunction(neumann_space, coefficients=x[dirichlet_space.global_dof_count :])
+total_field_dirichlet = bempp_cl.api.GridFunction(dirichlet_space, coefficients=x[: dirichlet_space.global_dof_count])
+total_field_neumann = bempp_cl.api.GridFunction(neumann_space, coefficients=x[dirichlet_space.global_dof_count :])
 # -
 
 # We now generate the points for the plot of a slice of the solution in the $z=0$ plane.
@@ -144,10 +144,10 @@ points_interior = points[:, idx_int]
 # To compute the solution in the interior and exterior of the sphere we need to assemble the corresponding potential operators and then compute the field data using Greens' representation formula.
 
 # +
-slp_pot_int = bempp.api.operators.potential.helmholtz.single_layer(dirichlet_space, points_interior, n * k)
-slp_pot_ext = bempp.api.operators.potential.helmholtz.single_layer(dirichlet_space, points_exterior, k)
-dlp_pot_int = bempp.api.operators.potential.helmholtz.double_layer(dirichlet_space, points_interior, n * k)
-dlp_pot_ext = bempp.api.operators.potential.helmholtz.double_layer(dirichlet_space, points_exterior, k)
+slp_pot_int = bempp_cl.api.operators.potential.helmholtz.single_layer(dirichlet_space, points_interior, n * k)
+slp_pot_ext = bempp_cl.api.operators.potential.helmholtz.single_layer(dirichlet_space, points_exterior, k)
+dlp_pot_int = bempp_cl.api.operators.potential.helmholtz.double_layer(dirichlet_space, points_interior, n * k)
+dlp_pot_ext = bempp_cl.api.operators.potential.helmholtz.double_layer(dirichlet_space, points_exterior, k)
 
 total_field_int = (slp_pot_int * total_field_neumann - dlp_pot_int * total_field_dirichlet).ravel()
 total_field_ext = (dlp_pot_ext * total_field_dirichlet - slp_pot_ext * total_field_neumann).ravel() + np.exp(

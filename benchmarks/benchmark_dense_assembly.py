@@ -17,9 +17,7 @@ def laplace_single_layer_dense_benchmark(benchmark, default_parameters):
     grid = bempp.api.shapes.regular_sphere(4)
     space = function_space(grid, "DP", 0)
 
-    fun = lambda: single_layer(
-        space, space, space, assembler="dense", parameters=default_parameters
-    ).weak_form()
+    fun = lambda: single_layer(space, space, space, assembler="dense", parameters=default_parameters).weak_form()
 
     benchmark(fun)
 
@@ -33,9 +31,7 @@ def laplace_single_layer_dense_large_benchmark(benchmark, default_parameters):
     grid = bempp.api.shapes.regular_sphere(5)
     space = function_space(grid, "DP", 0)
 
-    fun = lambda: single_layer(
-        space, space, space, assembler="dense", parameters=default_parameters
-    ).weak_form()
+    fun = lambda: single_layer(space, space, space, assembler="dense", parameters=default_parameters).weak_form()
 
     benchmark(fun)
 
@@ -49,9 +45,7 @@ def laplace_single_layer_dense_p1_disc_benchmark(benchmark, default_parameters):
     grid = bempp.api.shapes.regular_sphere(4)
     space = function_space(grid, "DP", 1)
 
-    fun = lambda: single_layer(
-        space, space, space, assembler="dense", parameters=default_parameters
-    ).weak_form()
+    fun = lambda: single_layer(space, space, space, assembler="dense", parameters=default_parameters).weak_form()
 
     benchmark(fun)
 
@@ -65,9 +59,7 @@ def laplace_single_layer_dense_p1_cont_benchmark(benchmark, default_parameters):
     grid = bempp.api.shapes.regular_sphere(4)
     space = function_space(grid, "P", 1)
 
-    fun = lambda: single_layer(
-        space, space, space, assembler="dense", parameters=default_parameters
-    ).weak_form()
+    fun = lambda: single_layer(space, space, space, assembler="dense", parameters=default_parameters).weak_form()
 
     benchmark(fun)
 

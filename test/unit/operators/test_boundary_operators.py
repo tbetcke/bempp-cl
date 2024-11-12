@@ -1,9 +1,9 @@
 """Unit tests for the dense assembler."""
 
 import pytest
-import bempp.api
-from bempp.api import function_space
-from bempp.api.operators.boundary import (
+import bempp_cl.api
+from bempp_cl.api import function_space
+from bempp_cl.api.operators.boundary import (
     laplace,
     helmholtz,
     modified_helmholtz,
@@ -21,7 +21,7 @@ curl_spaces = [("SNC", 0)]
 @pytest.mark.parametrize("type1", scalar_spaces)
 def test_sparse_operators(operator, type0, type1):
     """Test dense assembler for the Laplace operators."""
-    grid = bempp.api.shapes.regular_sphere(0)
+    grid = bempp_cl.api.shapes.regular_sphere(0)
     space0 = function_space(grid, *type0)
     space1 = function_space(grid, *type1)
 
@@ -34,7 +34,7 @@ def test_sparse_operators(operator, type0, type1):
 @pytest.mark.parametrize("type1", curl_spaces)
 def test_maxwell_sparse_operators(operator, type0, type1):
     """Test dense assembler for the Laplace operators."""
-    grid = bempp.api.shapes.regular_sphere(0)
+    grid = bempp_cl.api.shapes.regular_sphere(0)
     space0 = function_space(grid, *type0)
     space1 = function_space(grid, *type1)
 
@@ -50,7 +50,7 @@ def test_maxwell_sparse_operators(operator, type0, type1):
 @pytest.mark.parametrize("type1", scalar_spaces)
 def test_laplace_operators(operator, type0, type1):
     """Test dense assembler for the Laplace operators."""
-    grid = bempp.api.shapes.regular_sphere(0)
+    grid = bempp_cl.api.shapes.regular_sphere(0)
     space0 = function_space(grid, *type0)
     space1 = function_space(grid, *type1)
 
@@ -67,7 +67,7 @@ def test_laplace_operators(operator, type0, type1):
 @pytest.mark.parametrize("type1", scalar_spaces)
 def test_helmholtz_operators(operator, wavenumber, type0, type1):
     """Test dense assembler for the Helmholtz operators."""
-    grid = bempp.api.shapes.regular_sphere(0)
+    grid = bempp_cl.api.shapes.regular_sphere(0)
     space0 = function_space(grid, *type0)
     space1 = function_space(grid, *type1)
 
@@ -88,7 +88,7 @@ def test_helmholtz_operators(operator, wavenumber, type0, type1):
 @pytest.mark.parametrize("type1", scalar_spaces)
 def test_modified_helmholtz_operators(operator, wavenumber, type0, type1):
     """Test dense assembler for the modified Helmholtz operators."""
-    grid = bempp.api.shapes.regular_sphere(0)
+    grid = bempp_cl.api.shapes.regular_sphere(0)
     space0 = function_space(grid, *type0)
     space1 = function_space(grid, *type1)
 
@@ -99,17 +99,13 @@ def test_modified_helmholtz_operators(operator, wavenumber, type0, type1):
 def test_hypersingular_operators():
     """Test the hypersingular operators."""
 
-    grid = bempp.api.shapes.regular_sphere(0)
+    grid = bempp_cl.api.shapes.regular_sphere(0)
 
     space = function_space(grid, "P", 1)
 
-    bempp.api.operators.boundary.laplace.hypersingular(
-        space, space, space, assembler="dense"
-    ).weak_form()
-    bempp.api.operators.boundary.helmholtz.hypersingular(
-        space, space, space, 1.5, assembler="dense"
-    ).weak_form()
-    bempp.api.operators.boundary.modified_helmholtz.hypersingular(
+    bempp_cl.api.operators.boundary.laplace.hypersingular(space, space, space, assembler="dense").weak_form()
+    bempp_cl.api.operators.boundary.helmholtz.hypersingular(space, space, space, 1.5, assembler="dense").weak_form()
+    bempp_cl.api.operators.boundary.modified_helmholtz.hypersingular(
         space, space, space, 1.5, assembler="dense"
     ).weak_form()
 
@@ -120,20 +116,16 @@ def test_hypersingular_operators():
 )
 def test_hypersingular_fails_for_wrong_space(type0, type1):
     """Expected failure for wrong spaces."""
-    grid = bempp.api.shapes.regular_sphere(0)
+    grid = bempp_cl.api.shapes.regular_sphere(0)
     space0 = function_space(grid, *type0)
     space1 = function_space(grid, *type1)
 
     with pytest.raises(ValueError):
         laplace.hypersingular(space0, space1, space1, assembler="dense").weak_form()
     with pytest.raises(ValueError):
-        helmholtz.hypersingular(
-            space0, space1, space1, 1.5, assembler="dense"
-        ).weak_form()
+        helmholtz.hypersingular(space0, space1, space1, 1.5, assembler="dense").weak_form()
     with pytest.raises(ValueError):
-        modified_helmholtz.hypersingular(
-            space0, space1, space1, 1.5, assembler="dense"
-        ).weak_form()
+        modified_helmholtz.hypersingular(space0, space1, space1, 1.5, assembler="dense").weak_form()
 
 
 @pytest.mark.parametrize("operator", [maxwell.magnetic_field, maxwell.electric_field])
@@ -142,7 +134,7 @@ def test_hypersingular_fails_for_wrong_space(type0, type1):
 @pytest.mark.parametrize("type1", curl_spaces)
 def test_maxwell_operators(operator, wavenumber, type0, type1):
     """Test dense assembler for the Maxwell operators."""
-    grid = bempp.api.shapes.regular_sphere(0)
+    grid = bempp_cl.api.shapes.regular_sphere(0)
     space0 = function_space(grid, *type0)
     space1 = function_space(grid, *type1)
 

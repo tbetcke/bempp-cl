@@ -5,17 +5,15 @@
 
 import numpy as _np
 import pytest
-import bempp.api
+import bempp_cl.api
 
 pytestmark = pytest.mark.usefixtures("default_parameters", "helpers")
 
 grids = pytest.mark.parametrize(
     "grid",
     [
-        bempp.api.shapes.cube(),
-        bempp.api.shapes.screen(
-            _np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]]), h=0.2
-        ),
+        bempp_cl.api.shapes.cube(),
+        bempp_cl.api.shapes.screen(_np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]]), h=0.2),
     ],
 )
 
@@ -23,7 +21,7 @@ grids = pytest.mark.parametrize(
 @grids
 def test_p1_color_map(grid):
     """Test if the color map for p1 spaces is correct."""
-    space = bempp.api.function_space(grid, "P", 1)
+    space = bempp_cl.api.function_space(grid, "P", 1)
 
     colors_unique = True
 
@@ -38,7 +36,7 @@ def test_p1_color_map(grid):
 @grids
 def test_rwg_color_map(grid):
     """Test if the color map for RWG spaces is correct."""
-    space = bempp.api.function_space(grid, "RWG", 0)
+    space = bempp_cl.api.function_space(grid, "RWG", 0)
 
     colors_unique = True
 
@@ -53,7 +51,7 @@ def test_rwg_color_map(grid):
 @grids
 def test_p1_open_segment(grid):
     """Check a P1 open segment."""
-    space = bempp.api.function_space(grid, "P", 1, segments=[1])
+    space = bempp_cl.api.function_space(grid, "P", 1, segments=[1])
 
     dofs_empty = True
     boundary_dofs_empty = True
@@ -63,9 +61,7 @@ def test_p1_open_segment(grid):
             if _np.any(
                 space.support[
                     grid.element_neighbors.indices[
-                        grid.element_neighbors.indexptr[
-                            elem_index
-                        ] : grid.element_neighbors.indexptr[elem_index + 1]
+                        grid.element_neighbors.indexptr[elem_index] : grid.element_neighbors.indexptr[elem_index + 1]
                     ]
                 ]
                 is False
@@ -73,9 +69,7 @@ def test_p1_open_segment(grid):
                 # Element is on the boundary
                 for index, vertex_index in enumerate(grid.elements[:, elem_index]):
                     neighbors = grid.vertex_neighbors.indices[
-                        grid.vertex_neighbors.indexptr[
-                            vertex_index
-                        ] : grid.vertex_neighbors.indexptr[vertex_index + 1]
+                        grid.vertex_neighbors.indexptr[vertex_index] : grid.vertex_neighbors.indexptr[vertex_index + 1]
                     ]
                     if _np.any(space.support[neighbors] is False):
                         # Vertex is on the boundary
@@ -92,7 +86,7 @@ def test_p1_open_segment(grid):
 @grids
 def test_p1_extended_segment(grid):
     """Check a P1 extended segment."""
-    space = bempp.api.function_space(
+    space = bempp_cl.api.function_space(
         grid,
         "P",
         1,
@@ -105,9 +99,7 @@ def test_p1_extended_segment(grid):
 
     for vertex_index in range(grid.number_of_vertices):
         neighbors = grid.vertex_neighbors.indices[
-            grid.vertex_neighbors.indexptr[
-                vertex_index
-            ] : grid.vertex_neighbors.indexptr[vertex_index + 1]
+            grid.vertex_neighbors.indexptr[vertex_index] : grid.vertex_neighbors.indexptr[vertex_index + 1]
         ]
         if 1 in grid.domain_indices[neighbors]:
             # Vertex adjacent an element with domain index 1
@@ -125,9 +117,7 @@ def test_p1_extended_segment(grid):
 @grids
 def test_p1_closed_segment(grid):
     """Check a P1 closed segment."""
-    space = bempp.api.function_space(
-        grid, "P", 1, segments=[1], include_boundary_dofs=True
-    )
+    space = bempp_cl.api.function_space(grid, "P", 1, segments=[1], include_boundary_dofs=True)
 
     dofs_empty = True
     boundary_dofs_included = True
@@ -137,9 +127,7 @@ def test_p1_closed_segment(grid):
             if _np.any(
                 space.support[
                     grid.element_neighbors.indices[
-                        grid.element_neighbors.indexptr[
-                            elem_index
-                        ] : grid.element_neighbors.indexptr[elem_index + 1]
+                        grid.element_neighbors.indexptr[elem_index] : grid.element_neighbors.indexptr[elem_index + 1]
                     ]
                 ]
                 is False
@@ -158,7 +146,7 @@ def test_p1_closed_segment(grid):
 @grids
 def test_rwg_open_segment(grid):
     """Check an RWG open segment."""
-    space = bempp.api.function_space(grid, "RWG", 0, segments=[1])
+    space = bempp_cl.api.function_space(grid, "RWG", 0, segments=[1])
 
     dofs_empty = True
     boundary_dofs_empty = True
@@ -168,9 +156,7 @@ def test_rwg_open_segment(grid):
             if _np.any(
                 space.support[
                     grid.element_neighbors.indices[
-                        grid.element_neighbors.indexptr[
-                            elem_index
-                        ] : grid.element_neighbors.indexptr[elem_index + 1]
+                        grid.element_neighbors.indexptr[elem_index] : grid.element_neighbors.indexptr[elem_index + 1]
                     ]
                 ]
                 is False
@@ -193,9 +179,7 @@ def test_rwg_open_segment(grid):
 @grids
 def test_rwg_closed_segment(grid):
     """Check an RWG closed segment."""
-    space = bempp.api.function_space(
-        grid, "RWG", 0, segments=[1], include_boundary_dofs=True
-    )
+    space = bempp_cl.api.function_space(grid, "RWG", 0, segments=[1], include_boundary_dofs=True)
 
     for elem_index in range(grid.number_of_elements):
         if space.support[elem_index]:
@@ -207,9 +191,7 @@ def test_rwg_closed_segment(grid):
 @grids
 def test_snc_closed_segment(grid):
     """Check an SNC closed segment."""
-    space = bempp.api.function_space(
-        grid, "SNC", 0, segments=[1], include_boundary_dofs=True
-    )
+    space = bempp_cl.api.function_space(grid, "SNC", 0, segments=[1], include_boundary_dofs=True)
 
     for elem_index in range(grid.number_of_elements):
         if space.support[elem_index]:
@@ -221,7 +203,7 @@ def test_snc_closed_segment(grid):
 @grids
 def test_snc_open_segment(grid):
     """Check an SNC open segment."""
-    space = bempp.api.function_space(grid, "SNC", 0, segments=[1])
+    space = bempp_cl.api.function_space(grid, "SNC", 0, segments=[1])
 
     dofs_empty = True
     boundary_dofs_empty = True
@@ -231,9 +213,7 @@ def test_snc_open_segment(grid):
             if _np.any(
                 space.support[
                     grid.element_neighbors.indices[
-                        grid.element_neighbors.indexptr[
-                            elem_index
-                        ] : grid.element_neighbors.indexptr[elem_index + 1]
+                        grid.element_neighbors.indexptr[elem_index] : grid.element_neighbors.indexptr[elem_index + 1]
                     ]
                 ]
                 is False
@@ -256,7 +236,7 @@ def test_snc_open_segment(grid):
 @grids
 def test_dp1_closed_segment(grid):
     """Check an DP1 closed segment."""
-    space = bempp.api.function_space(grid, "DP", 1, segments=[1])
+    space = bempp_cl.api.function_space(grid, "DP", 1, segments=[1])
 
     for elem_index in range(grid.number_of_elements):
         if space.support[elem_index]:

@@ -1,6 +1,6 @@
 """Unit tests for Buffa-Christansen spaces."""
 
-import bempp.api
+import bempp_cl.api
 import pytest
 import numpy as np
 
@@ -10,9 +10,9 @@ local_vertices = [[0, 0], [1, 0], [0, 1]]
 @pytest.mark.parametrize("space_type,degree", [("P", 1)])
 def test_H1_continuity(space_type, degree):
     """Test that BC spaces have continuous normal components."""
-    grid = bempp.api.shapes.sphere(h=0.2)
-    space = bempp.api.function_space(grid, space_type, degree)
-    f = bempp.api.GridFunction(space, coefficients=range(space.global_dof_count))
+    grid = bempp_cl.api.shapes.sphere(h=0.2)
+    space = bempp_cl.api.function_space(grid, space_type, degree)
+    f = bempp_cl.api.GridFunction(space, coefficients=range(space.global_dof_count))
 
     for e, (vertices, neighbors) in enumerate(zip(grid.edges.T, grid.edge_neighbors)):
         v0 = [local_vertices[list(grid.elements[:, neighbors[0]]).index(v)] for v in vertices]
@@ -29,9 +29,9 @@ def test_H1_continuity(space_type, degree):
 @pytest.mark.parametrize("space_type", ["RT", "BC"])
 def test_Hdiv_continuity(space_type):
     """Test that BC spaces have continuous normal components."""
-    grid = bempp.api.shapes.sphere(h=0.2)
-    space = bempp.api.function_space(grid, space_type, 0)
-    f = bempp.api.GridFunction(space, coefficients=range(space.global_dof_count))
+    grid = bempp_cl.api.shapes.sphere(h=0.2)
+    space = bempp_cl.api.function_space(grid, space_type, 0)
+    f = bempp_cl.api.GridFunction(space, coefficients=range(space.global_dof_count))
 
     if space_type == "BC":
         grid = grid.barycentric_refinement
@@ -62,9 +62,9 @@ def test_Hdiv_continuity(space_type):
 @pytest.mark.parametrize("space_type", ["NC", "RBC"])
 def test_Hcurl_continuity(space_type):
     """Test that BC spaces have continuous normal components."""
-    grid = bempp.api.shapes.sphere(h=0.2)
-    space = bempp.api.function_space(grid, space_type, 0)
-    f = bempp.api.GridFunction(space, coefficients=range(space.global_dof_count))
+    grid = bempp_cl.api.shapes.sphere(h=0.2)
+    space = bempp_cl.api.function_space(grid, space_type, 0)
+    f = bempp_cl.api.GridFunction(space, coefficients=range(space.global_dof_count))
 
     if space_type == "RBC":
         grid = grid.barycentric_refinement

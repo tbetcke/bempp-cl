@@ -21,16 +21,12 @@ def laplace_potential_dense_large_p0_benchmark(benchmark, default_parameters):
     npoints = 10000
 
     theta = np.linspace(0, 2 * np.pi, npoints)
-    points = np.vstack(
-        [np.cos(theta), np.sin(theta), 3 * np.ones(npoints, dtype="float64")]
-    )
+    points = np.vstack([np.cos(theta), np.sin(theta), 3 * np.ones(npoints, dtype="float64")])
 
     coefficients = np.random.randn(space.global_dof_count)
     grid_fun = bempp.api.GridFunction(space, coefficients=coefficients)
 
-    fun = lambda: single_layer(space, points, parameters=default_parameters).evaluate(
-        grid_fun
-    )
+    fun = lambda: single_layer(space, points, parameters=default_parameters).evaluate(grid_fun)
 
     benchmark(fun)
 
@@ -48,18 +44,12 @@ def helmholtz_potential_dense_large_p0_benchmark(benchmark, default_parameters):
     npoints = 10000
 
     theta = np.linspace(0, 2 * np.pi, npoints)
-    points = np.vstack(
-        [np.cos(theta), np.sin(theta), 3 * np.ones(npoints, dtype="float64")]
-    )
+    points = np.vstack([np.cos(theta), np.sin(theta), 3 * np.ones(npoints, dtype="float64")])
 
-    coefficients = np.random.randn(space.global_dof_count) + 1j * np.random.randn(
-        space.global_dof_count
-    )
+    coefficients = np.random.randn(space.global_dof_count) + 1j * np.random.randn(space.global_dof_count)
 
     grid_fun = bempp.api.GridFunction(space, coefficients=coefficients)
 
-    fun = lambda: single_layer(
-        space, points, 2.5, parameters=default_parameters
-    ).evaluate(grid_fun)
+    fun = lambda: single_layer(space, points, 2.5, parameters=default_parameters).evaluate(grid_fun)
 
     benchmark(fun)

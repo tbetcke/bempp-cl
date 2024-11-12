@@ -11,7 +11,7 @@
 # # Simple FEM-BEM coupling for the Helmholtz equation with FEniCS
 #
 # ## Background
-# <i>For this problem, you will need FEniCS installed alongside Bempp.</i>
+# <i>For this problem, you will need FEniCS installed alongside Bempp-cl.</i>
 #
 # In this tutorial, we will solve the problem of a wave travelling through a unit cube, $\Omega = [0,1]^3$ with different material parameters inside and outside the domain. The incident wave is given by
 #
@@ -106,7 +106,7 @@
 # We begin by importing DOLFIN, the FEniCS python library, Bempp and NumPy.
 
 import dolfin
-import bempp.api
+import bempp_cl.api
 import numpy as np
 
 # Next, we set the wavenumber ``k`` and the direction ``d`` of the incoming wave.
@@ -123,14 +123,14 @@ mesh = dolfin.UnitCubeMesh(10, 10, 10)
 
 # Next, we make the DOLFIN and Bempp function spaces.
 #
-# The function ``fenics_to_bempp_trace_data`` will extract the trace space from the DOLFIN space and create the matrix ``trace_matrix``, which maps between the dofs (degrees of freedom) in DOLFIN and Bempp.
+# The function ``fenics_to_bempp_trace_data`` will extract the trace space from the DOLFIN space and create the matrix ``trace_matrix``, which maps between the dofs (degrees of freedom) in DOLFIN and bempp_cl.
 
 # +
-from bempp.api.external import fenics
+from bempp_cl.api.external import fenics
 
 fenics_space = dolfin.FunctionSpace(mesh, "CG", 1)
 trace_space, trace_matrix = fenics.fenics_to_bempp_trace_data(fenics_space)
-bempp_space = bempp.api.function_space(trace_space.grid, "DP", 0)
+bempp_space = bempp_cl.api.function_space(trace_space.grid, "DP", 0)
 
 print("FEM dofs: {0}".format(mesh.num_vertices()))
 print("BEM dofs: {0}".format(bempp_space.global_dof_count))
@@ -139,10 +139,10 @@ print("BEM dofs: {0}".format(bempp_space.global_dof_count))
 # We create the boundary operators that we need.
 
 # +
-id_op = bempp.api.operators.boundary.sparse.identity(trace_space, bempp_space, bempp_space)
-mass = bempp.api.operators.boundary.sparse.identity(bempp_space, bempp_space, trace_space)
-dlp = bempp.api.operators.boundary.helmholtz.double_layer(trace_space, bempp_space, bempp_space, k)
-slp = bempp.api.operators.boundary.helmholtz.single_layer(bempp_space, bempp_space, bempp_space, k)
+id_op = bempp_cl.api.operators.boundary.sparse.identity(trace_space, bempp_space, bempp_space)
+mass = bempp_cl.api.operators.boundary.sparse.identity(bempp_space, bempp_space, trace_space)
+dlp = bempp_cl.api.operators.boundary.helmholtz.double_layer(trace_space, bempp_space, bempp_space, k)
+slp = bempp_cl.api.operators.boundary.helmholtz.single_layer(bempp_space, bempp_space, bempp_space, k)
 # -
 
 # We create the DOLFIN function spaces and the function (or in this case constant) ``n``.
@@ -155,12 +155,12 @@ n = 0.5
 
 
 # +
-@bempp.api.complex_callable
+@bempp_cl.api.complex_callable
 def u_inc(x, n, domain_index, result):
     result[0] = np.exp(1j * k * np.dot(x, d))
 
 
-u_inc = bempp.api.GridFunction(bempp_space, fun=u_inc)
+u_inc = bempp_cl.api.GridFunction(bempp_space, fun=u_inc)
 
 # The rhs from the FEM
 rhs_fem = np.zeros(mesh.num_vertices())
@@ -179,8 +179,8 @@ rhs = np.concatenate([rhs_fem, rhs_bem])
 # $$
 
 # +
-from bempp.api.assembly.blocked_operator import BlockedDiscreteOperator
-from bempp.api.external.fenics import FenicsOperator
+from bempp_cl.api.assembly.blocked_operator import BlockedDiscreteOperator
+from bempp_cl.api.external.fenics import FenicsOperator
 from scipy.sparse.linalg.interface import LinearOperator
 
 blocks = [[None, None], [None, None]]
@@ -200,7 +200,7 @@ blocked = BlockedDiscreteOperator(np.array(blocks))
 # Next, we solve the system, then split the solution into the parts assosiated with u and &lambda;. For an efficient solve, preconditioning is required.
 
 # +
-from bempp.api.assembly.discrete_boundary_operator import InverseSparseDiscreteBoundaryOperator
+from bempp_cl.api.assembly.discrete_boundary_operator import InverseSparseDiscreteBoundaryOperator
 from scipy.sparse.linalg import LinearOperator
 
 # Compute the sparse inverse of the Helmholtz operator
@@ -212,7 +212,7 @@ P1 = InverseSparseDiscreteBoundaryOperator(blocked[0, 0].to_sparse().tocsc())
 # For the Laplace slp we use a simple mass matrix preconditioner.
 # This is sufficient for smaller low-frequency problems.
 P2 = InverseSparseDiscreteBoundaryOperator(
-    bempp.api.operators.boundary.sparse.identity(bempp_space, bempp_space, bempp_space).weak_form()
+    bempp_cl.api.operators.boundary.sparse.identity(bempp_space, bempp_space, bempp_space).weak_form()
 )
 
 
@@ -257,10 +257,10 @@ u.vector()[:] = np.ascontiguousarray(np.real(soln_fem))
 
 # Solution function with dirichlet data on the boundary
 dirichlet_data = trace_matrix * soln_fem
-dirichlet_fun = bempp.api.GridFunction(trace_space, coefficients=dirichlet_data)
+dirichlet_fun = bempp_cl.api.GridFunction(trace_space, coefficients=dirichlet_data)
 
 # Solution function with Neumann data on the boundary
-neumann_fun = bempp.api.GridFunction(bempp_space, coefficients=soln_bem)
+neumann_fun = bempp_cl.api.GridFunction(bempp_space, coefficients=soln_bem)
 # -
 
 # We now evaluate the solution on the slice $z=0.5$ and plot it. For the exterior domain, we use the respresentation formula
@@ -289,8 +289,8 @@ plot_me = np.zeros(points.shape[1], dtype=np.complex128)
 x, y, z = points
 bem_x = np.logical_not((x > 0) * (x < 1) * (y > 0) * (y < 1) * (z > 0) * (z < 1))
 
-slp_pot = bempp.api.operators.potential.helmholtz.single_layer(bempp_space, points[:, bem_x], k)
-dlp_pot = bempp.api.operators.potential.helmholtz.double_layer(trace_space, points[:, bem_x], k)
+slp_pot = bempp_cl.api.operators.potential.helmholtz.single_layer(bempp_space, points[:, bem_x], k)
+dlp_pot = bempp_cl.api.operators.potential.helmholtz.double_layer(trace_space, points[:, bem_x], k)
 
 plot_me[bem_x] += np.exp(1j * k * (points[0, bem_x] * d[0] + points[1, bem_x] * d[1] + points[2, bem_x] * d[2]))
 plot_me[bem_x] += dlp_pot.evaluate(dirichlet_fun).flat

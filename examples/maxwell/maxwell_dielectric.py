@@ -51,17 +51,17 @@
 # We start with the usual imports and enable console logging.
 
 # +
-import bempp.api
+import bempp_cl.api
 import numpy as np
 
-bempp.api.enable_console_logging()
-# bempp.api.pool.create_device_pool("AMD")
+bempp_cl.api.enable_console_logging()
+# bempp_cl.api.pool.create_device_pool("AMD")
 # -
 
 # For this notebook we will use two spheres of radius 0.4, centered at $-1$ and $1$ on the x-axis.
 
-sphere0 = bempp.api.shapes.sphere(r=0.4, origin=(-1.0, 0, 0), h=0.2)
-sphere1 = bempp.api.shapes.sphere(r=0.4, origin=(1.0, 0, 0), h=0.2)
+sphere0 = bempp_cl.api.shapes.sphere(r=0.4, origin=(-1.0, 0, 0), h=0.2)
+sphere1 = bempp_cl.api.shapes.sphere(r=0.4, origin=(1.0, 0, 0), h=0.2)
 
 # We now define the associated constants and material parameters. We have chosen the material parameters for Teflon. The overall simulation will be running at a frequency of 300Mhz.
 
@@ -90,13 +90,13 @@ def plane_wave(point):
     return polarization * np.exp(1j * k_ext * np.dot(point, direction))
 
 
-@bempp.api.complex_callable
+@bempp_cl.api.complex_callable
 def tangential_trace(point, n, domain_index, result):
     value = polarization * np.exp(1j * k_ext * np.dot(point, direction))
     result[:] = np.cross(value, n)
 
 
-@bempp.api.complex_callable
+@bempp_cl.api.complex_callable
 def neumann_trace(point, n, domain_index, result):
     value = np.cross(direction, polarization) * 1j * k_ext * np.exp(1j * k_ext * np.dot(point, direction))
     result[:] = 1.0 / (1j * k_ext) * np.cross(value, n)
@@ -107,7 +107,7 @@ def neumann_trace(point, n, domain_index, result):
 # We now create all the interior and exterior multitrace operators and setup the left-hand side blocked operator.
 
 # +
-from bempp.api.operators.boundary.maxwell import multitrace_operator
+from bempp_cl.api.operators.boundary.maxwell import multitrace_operator
 
 A0_int = multitrace_operator(sphere0, k_int, epsilon_r=eps_r, mu_r=mu_r, space_type="all_rwg")
 A1_int = multitrace_operator(sphere1, k_int, epsilon_r=eps_r, mu_r=mu_r, space_type="all_rwg")
@@ -117,21 +117,21 @@ A01 = multitrace_operator(sphere1, k_ext, target=sphere0, space_type="all_rwg")
 A10 = multitrace_operator(sphere0, k_ext, target=sphere1, space_type="all_rwg")
 
 
-A = bempp.api.GeneralizedBlockedOperator([[A0_int + A0_ext, A01], [A10, A1_int + A1_ext]])
+A = bempp_cl.api.GeneralizedBlockedOperator([[A0_int + A0_ext, A01], [A10, A1_int + A1_ext]])
 # -
 
 # The following code assembles the right-hand sides.
 
 rhs = [
-    bempp.api.GridFunction(space=A.range_spaces[0], dual_space=A.dual_to_range_spaces[0], fun=tangential_trace),
-    bempp.api.GridFunction(space=A.range_spaces[1], dual_space=A.dual_to_range_spaces[1], fun=neumann_trace),
-    bempp.api.GridFunction(space=A.range_spaces[2], dual_space=A.dual_to_range_spaces[2], fun=tangential_trace),
-    bempp.api.GridFunction(space=A.range_spaces[3], dual_space=A.dual_to_range_spaces[3], fun=neumann_trace),
+    bempp_cl.api.GridFunction(space=A.range_spaces[0], dual_space=A.dual_to_range_spaces[0], fun=tangential_trace),
+    bempp_cl.api.GridFunction(space=A.range_spaces[1], dual_space=A.dual_to_range_spaces[1], fun=neumann_trace),
+    bempp_cl.api.GridFunction(space=A.range_spaces[2], dual_space=A.dual_to_range_spaces[2], fun=tangential_trace),
+    bempp_cl.api.GridFunction(space=A.range_spaces[3], dual_space=A.dual_to_range_spaces[3], fun=neumann_trace),
 ]
 
 # We now have everything in place to solve the resulting scattering problem. Here, we solve directly with LU decomposition. For larger problems iterative solvers with preconditioning is appropriate.
 
-sol = bempp.api.linalg.lu(A, rhs)
+sol = bempp_cl.api.linalg.lu(A, rhs)
 
 # In the following we visualize the near-field. For this we evaluate the interior and exterior field using the Stratton-Chu representation formula.
 
@@ -157,15 +157,15 @@ ext_points = points[:, exterior_indices]
 int_points0 = points[:, interior_indices0]
 int_points1 = points[:, interior_indices1]
 
-mpot0_int = bempp.api.operators.potential.maxwell.magnetic_field(sol[0].space, int_points0, k_int)
-epot0_int = bempp.api.operators.potential.maxwell.electric_field(sol[1].space, int_points0, k_int)
-mpot0_ext = bempp.api.operators.potential.maxwell.magnetic_field(sol[0].space, ext_points, k_ext)
-epot0_ext = bempp.api.operators.potential.maxwell.electric_field(sol[1].space, ext_points, k_ext)
+mpot0_int = bempp_cl.api.operators.potential.maxwell.magnetic_field(sol[0].space, int_points0, k_int)
+epot0_int = bempp_cl.api.operators.potential.maxwell.electric_field(sol[1].space, int_points0, k_int)
+mpot0_ext = bempp_cl.api.operators.potential.maxwell.magnetic_field(sol[0].space, ext_points, k_ext)
+epot0_ext = bempp_cl.api.operators.potential.maxwell.electric_field(sol[1].space, ext_points, k_ext)
 
-mpot1_int = bempp.api.operators.potential.maxwell.magnetic_field(sol[2].space, int_points1, k_int)
-epot1_int = bempp.api.operators.potential.maxwell.electric_field(sol[3].space, int_points1, k_int)
-mpot1_ext = bempp.api.operators.potential.maxwell.magnetic_field(sol[2].space, ext_points, k_ext)
-epot1_ext = bempp.api.operators.potential.maxwell.electric_field(sol[3].space, ext_points, k_ext)
+mpot1_int = bempp_cl.api.operators.potential.maxwell.magnetic_field(sol[2].space, int_points1, k_int)
+epot1_int = bempp_cl.api.operators.potential.maxwell.electric_field(sol[3].space, int_points1, k_int)
+mpot1_ext = bempp_cl.api.operators.potential.maxwell.magnetic_field(sol[2].space, ext_points, k_ext)
+epot1_ext = bempp_cl.api.operators.potential.maxwell.electric_field(sol[3].space, ext_points, k_ext)
 
 exterior_values = -epot0_ext * sol[1] - mpot0_ext * sol[0]
 exterior_values += -epot1_ext * sol[3] - mpot1_ext * sol[2]
@@ -243,8 +243,8 @@ unit_points = np.array([-np.cos(angles), -np.sin(angles), np.zeros(number_of_ang
 far_field = np.zeros((3, number_of_angles), dtype="complex128")
 
 for i in range(2):
-    electric_far = bempp.api.operators.far_field.maxwell.electric_field(sol[2 * i + 1].space, unit_points, k_ext)
-    magnetic_far = bempp.api.operators.far_field.maxwell.magnetic_field(sol[2 * i].space, unit_points, k_ext)
+    electric_far = bempp_cl.api.operators.far_field.maxwell.electric_field(sol[2 * i + 1].space, unit_points, k_ext)
+    magnetic_far = bempp_cl.api.operators.far_field.maxwell.magnetic_field(sol[2 * i].space, unit_points, k_ext)
     far_field += -electric_far * sol[2 * i + 1] - magnetic_far * sol[2 * i]
 
 plt.rcParams["figure.figsize"] = (10, 8)  # Resize the figure

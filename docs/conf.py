@@ -139,7 +139,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "bempp", "Bempp Documentation", [author], 1)]
+man_pages = [(master_doc, "bempp_cl", "Bempp Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------------
@@ -180,5 +180,5 @@ epub_exclude_files = ["search.html"]
 
 # -- Extension configuration -------------------------------------------------
 autoapi_type = "python"
-autoapi_dirs = ["../bempp"]
+autoapi_dirs = ["../bempp_cl"]
 autoapi_root = "docs"

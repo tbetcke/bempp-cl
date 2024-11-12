@@ -14,8 +14,6 @@ def sparse_identity_benchmark(benchmark, default_parameters):
     grid = bempp.api.shapes.regular_sphere(6)
     space = function_space(grid, "DP", 1)
 
-    fun = lambda: identity(
-        space, space, space, parameters=default_parameters
-    ).weak_form()
+    fun = lambda: identity(space, space, space, parameters=default_parameters).weak_form()
 
     benchmark(fun)

@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "bempp-cl"
 version = "0.3.2"
@@ -18,8 +22,26 @@ repository = "https://github.com/bempp/bempp-cl"
 [project.optional-dependencies]
 docs = ["sphinx-autoapi"]
 optional = ["matplotlib"]
-style = ["pydocstyle", "flake8"]
+style = ["pydocstyle", "ruff"]
 test = ["pytest", "pytest-xdist", "bempp-cl[optional]"]
 
-[tool.setuptools]
-packages = ["bempp"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["bempp_cl*", "*.npz"]
+
+[tool.setuptools.package-data]
+"*" = ["*.npz"]
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+lint.ignore = ["E203", "E731"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"shapes.py" = ["E501"]
+"examples/*" = ["E402", "E501"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+

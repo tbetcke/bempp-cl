@@ -51,13 +51,13 @@
 # (\tfrac12\mathsf{Id} + \mathsf{K}' - \mathrm{i} \eta \mathsf{V}) u_\nu(\mathbf{x}) = \frac{\partial u^{\text{inc}}}{\partial \nu}(\mathbf{x}) - \mathrm{i} \eta u^{\text{inc}}(\mathbf{x}), \quad \mathbf{x} \in \Gamma.
 # $$
 #
-# where $\mathsf{Id}$, $\mathsf{K}'$ and $\mathsf{V}$ are identity, adjoint double layer and single layer <a href='https://bempp.com/2017/07/11/available_operators/'>boundary operators</a>. More details of the derivation of this formulation and its properties can be found in the article <a href='http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=8539370&fileId=S0962492912000037' target='new'>Chandler-Wilde <em>et al</em> (2012)</a>.
+# where $\mathsf{Id}$, $\mathsf{K}'$ and $\mathsf{V}$ are identity, adjoint double layer and single layer <a href='https://bempp_cl.com/2017/07/11/available_operators/'>boundary operators</a>. More details of the derivation of this formulation and its properties can be found in the article <a href='http://journals.cambridge.org/action/displayAbstract?fromPage=online&aid=8539370&fileId=S0962492912000037' target='new'>Chandler-Wilde <em>et al</em> (2012)</a>.
 #
 # ## Implementation
 #
 # First we import the Bempp module and NumPy.
 
-import bempp.api
+import bempp_cl.api
 import numpy as np
 
 # We define the wavenumber
@@ -66,22 +66,22 @@ k = 15.0
 
 # The following command creates a sphere mesh.
 
-grid = bempp.api.shapes.regular_sphere(3)
+grid = bempp_cl.api.shapes.regular_sphere(3)
 
 # As basis functions, we use piecewise constant functions over the elements of the mesh. The corresponding space is initialised as follows.
 
-piecewise_const_space = bempp.api.function_space(grid, "DP", 0)
+piecewise_const_space = bempp_cl.api.function_space(grid, "DP", 0)
 
-# We now initialise the <a href='https://bempp.com/2017/07/11/operators/'>boundary operators</a>.
+# We now initialise the <a href='https://bempp_cl.com/2017/07/11/operators/'>boundary operators</a>.
 # A boundary operator always takes at least three space arguments: a domain space, a range space and the test space (dual to the range). In this example we only work on the space $\mathcal{L}^2(\Gamma)$ and we can choose all spaces to be identical.
 
-identity = bempp.api.operators.boundary.sparse.identity(
+identity = bempp_cl.api.operators.boundary.sparse.identity(
     piecewise_const_space, piecewise_const_space, piecewise_const_space
 )
-adlp = bempp.api.operators.boundary.helmholtz.adjoint_double_layer(
+adlp = bempp_cl.api.operators.boundary.helmholtz.adjoint_double_layer(
     piecewise_const_space, piecewise_const_space, piecewise_const_space, k
 )
-slp = bempp.api.operators.boundary.helmholtz.single_layer(
+slp = bempp_cl.api.operators.boundary.helmholtz.single_layer(
     piecewise_const_space, piecewise_const_space, piecewise_const_space, k
 )
 
@@ -89,21 +89,21 @@ slp = bempp.api.operators.boundary.helmholtz.single_layer(
 
 lhs = 0.5 * identity + adlp - 1j * k * slp
 
-# We now form the right-hand side by defining a <a href='https://bempp.com/2017/07/11/grid-functions/'>GridFunction</a> using Python callable.
+# We now form the right-hand side by defining a <a href='https://bempp_cl.com/2017/07/11/grid-functions/'>GridFunction</a> using Python callable.
 
 
 # +
-@bempp.api.complex_callable
+@bempp_cl.api.complex_callable
 def combined_data(x, n, domain_index, result):
     result[0] = 1j * k * np.exp(1j * k * x[0]) * (n[0] - 1)
 
 
-grid_fun = bempp.api.GridFunction(piecewise_const_space, fun=combined_data)
+grid_fun = bempp_cl.api.GridFunction(piecewise_const_space, fun=combined_data)
 # -
 
 # We can now use GMRES to solve the problem.
 
-from bempp.api.linalg import gmres
+from bempp_cl.api.linalg import gmres
 
 neumann_fun, info = gmres(lhs, grid_fun, tol=1e-5)
 
@@ -129,7 +129,7 @@ u_evaluated[:] = np.nan
 x, y, z = points
 idx = np.sqrt(x**2 + y**2) > 1.0
 
-from bempp.api.operators.potential import helmholtz as helmholtz_potential
+from bempp_cl.api.operators.potential import helmholtz as helmholtz_potential
 
 slp_pot = helmholtz_potential.single_layer(piecewise_const_space, points[:, idx], k)
 res = np.real(np.exp(1j * k * points[0, idx]) - slp_pot.evaluate(neumann_fun))

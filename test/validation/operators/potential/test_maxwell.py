@@ -12,13 +12,11 @@ WAVENUMBER = 2.5
 WAVENUMBER_COMPLEX = 2.5 + 1j
 
 
-def test_maxwell_electric_field_potential_complex(
-    default_parameters, helpers, device_interface, precision
-):
+def test_maxwell_electric_field_potential_complex(default_parameters, helpers, device_interface, precision):
     """Test Maxwell efield potential with complex wavenumber."""
-    from bempp.api import function_space
-    from bempp.api import GridFunction
-    from bempp.api.operators.potential.maxwell import electric_field
+    from bempp_cl.api import function_space
+    from bempp_cl.api import GridFunction
+    from bempp_cl.api.operators.potential.maxwell import electric_field
 
     grid = helpers.load_grid("sphere")
     space = function_space(grid, "RWG", 0)
@@ -40,18 +38,14 @@ def test_maxwell_electric_field_potential_complex(
         device_interface=device_interface,
     ).evaluate(fun)
 
-    _np.testing.assert_allclose(
-        actual, expected, rtol=helpers.default_tolerance(precision)
-    )
+    _np.testing.assert_allclose(actual, expected, rtol=helpers.default_tolerance(precision))
 
 
-def test_maxwell_electric_field_potential_rwg(
-    default_parameters, helpers, device_interface, precision
-):
+def test_maxwell_electric_field_potential_rwg(default_parameters, helpers, device_interface, precision):
     """Test Maxwell efield potential."""
-    from bempp.api import function_space
-    from bempp.api import GridFunction
-    from bempp.api.operators.potential.maxwell import electric_field
+    from bempp_cl.api import function_space
+    from bempp_cl.api import GridFunction
+    from bempp_cl.api.operators.potential.maxwell import electric_field
 
     grid = helpers.load_grid("sphere")
     space = function_space(grid, "RWG", 0)
@@ -73,18 +67,14 @@ def test_maxwell_electric_field_potential_rwg(
         device_interface=device_interface,
     ).evaluate(fun)
 
-    _np.testing.assert_allclose(
-        actual, expected, rtol=helpers.default_tolerance(precision)
-    )
+    _np.testing.assert_allclose(actual, expected, rtol=helpers.default_tolerance(precision))
 
 
-def test_maxwell_magnetic_field_potential_rwg(
-    default_parameters, helpers, device_interface, precision
-):
+def test_maxwell_magnetic_field_potential_rwg(default_parameters, helpers, device_interface, precision):
     """Test Maxwell magnetic potential."""
-    from bempp.api import function_space
-    from bempp.api import GridFunction
-    from bempp.api.operators.potential.maxwell import magnetic_field
+    from bempp_cl.api import function_space
+    from bempp_cl.api import GridFunction
+    from bempp_cl.api.operators.potential.maxwell import magnetic_field
 
     grid = helpers.load_grid("sphere")
     space = function_space(grid, "RWG", 0)
@@ -106,18 +96,14 @@ def test_maxwell_magnetic_field_potential_rwg(
         device_interface=device_interface,
     ).evaluate(fun)
 
-    _np.testing.assert_allclose(
-        actual, expected, rtol=helpers.default_tolerance(precision)
-    )
+    _np.testing.assert_allclose(actual, expected, rtol=helpers.default_tolerance(precision))
 
 
-def test_maxwell_magnetic_field_potential_complex(
-    default_parameters, helpers, device_interface, precision
-):
+def test_maxwell_magnetic_field_potential_complex(default_parameters, helpers, device_interface, precision):
     """Test Maxwell magnetic potential with complex wavenumber."""
-    from bempp.api import function_space
-    from bempp.api import GridFunction
-    from bempp.api.operators.potential.maxwell import magnetic_field
+    from bempp_cl.api import function_space
+    from bempp_cl.api import GridFunction
+    from bempp_cl.api.operators.potential.maxwell import magnetic_field
 
     grid = helpers.load_grid("sphere")
     space = function_space(grid, "RWG", 0)
@@ -139,22 +125,20 @@ def test_maxwell_magnetic_field_potential_complex(
         device_interface=device_interface,
     ).evaluate(fun)
 
-    _np.testing.assert_allclose(
-        actual, expected, rtol=helpers.default_tolerance(precision)
-    )
+    _np.testing.assert_allclose(actual, expected, rtol=helpers.default_tolerance(precision))
 
 
 # def test_maxwell_potentials_segments(
 #         default_parameters, helpers, device_interface, precision):
 #     """Test Maxwell potentials on segments."""
-#     import bempp.api
-#     from bempp.api import function_space
-#     from bempp.api import GridFunction
-#     from bempp.api.operators.potential.maxwell import electric_field
-#     from bempp.api.operators.potential.maxwell import magnetic_field
-#     from bempp.api.grid.grid import grid_from_segments
+#     import bempp_cl.api
+#     from bempp_cl.api import function_space
+#     from bempp_cl.api import GridFunction
+#     from bempp_cl.api.operators.potential.maxwell import electric_field
+#     from bempp_cl.api.operators.potential.maxwell import magnetic_field
+#     from bempp_cl.api.grid.grid import grid_from_segments
 
-#     grid = bempp.api.shapes.multitrace_cube()
+#     grid = bempp_cl.api.shapes.multitrace_cube()
 
 #     seglists = [[1, 2, 3, 4, 5, 6], [6, 7, 8, 9, 10, 11]]
 #     swapped_normal_lists = [{}, {6}]
@@ -172,8 +156,8 @@ def test_maxwell_magnetic_field_potential_complex(
 #             space2 = function_space(new_grid, "RWG", 0, swapped_normals=swapped_normals)
 
 #             points = _np.array([2.3, 1.3, 1.5]).reshape(3, 1) + rand.rand(3, 5)
-#             fun1 = bempp.api.GridFunction(space1, coefficients=coeffs)
-#             fun2 = bempp.api.GridFunction(space2, coefficients=coeffs)
+#             fun1 = bempp_cl.api.GridFunction(space1, coefficients=coeffs)
+#             fun2 = bempp_cl.api.GridFunction(space2, coefficients=coeffs)
 
 #             actual = op(space1, points, 2.5) * fun1
 #             expected = op(space2, points, 2.5) * fun2
@@ -185,14 +169,14 @@ def test_maxwell_magnetic_field_potential_complex(
 # def test_maxwell_potentials_segments_complex_coeffs(
 #         default_parameters, helpers, device_interface, precision):
 #     """Test Maxwell potentials on segments with complex coeffs."""
-#     import bempp.api
-#     from bempp.api import function_space
-#     from bempp.api import GridFunction
-#     from bempp.api.operators.potential.maxwell import electric_field
-#     from bempp.api.operators.potential.maxwell import magnetic_field
-#     from bempp.api.grid.grid import grid_from_segments
+#     import bempp_cl.api
+#     from bempp_cl.api import function_space
+#     from bempp_cl.api import GridFunction
+#     from bempp_cl.api.operators.potential.maxwell import electric_field
+#     from bempp_cl.api.operators.potential.maxwell import magnetic_field
+#     from bempp_cl.api.grid.grid import grid_from_segments
 
-#     grid = bempp.api.shapes.multitrace_cube()
+#     grid = bempp_cl.api.shapes.multitrace_cube()
 
 #     seglists = [[1, 2, 3, 4, 5, 6], [6, 7, 8, 9, 10, 11]]
 #     swapped_normal_lists = [{}, {6}]
@@ -210,8 +194,8 @@ def test_maxwell_magnetic_field_potential_complex(
 #             space2 = function_space(new_grid, "RWG", 0, swapped_normals=swapped_normals)
 
 #             points = _np.array([2.3, 1.3, 1.5]).reshape(3, 1) + rand.rand(3, 5)
-#             fun1 = bempp.api.GridFunction(space1, coefficients=coeffs)
-#             fun2 = bempp.api.GridFunction(space2, coefficients=coeffs)
+#             fun1 = bempp_cl.api.GridFunction(space1, coefficients=coeffs)
+#             fun2 = bempp_cl.api.GridFunction(space2, coefficients=coeffs)
 
 #             actual = op(space1, points, 2.5) * fun1
 #             expected = op(space2, points, 2.5) * fun2

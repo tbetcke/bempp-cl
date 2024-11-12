@@ -56,7 +56,7 @@
 # ## Implementation
 # We start with the usual imports.
 
-import bempp.api
+import bempp_cl.api
 import numpy as np
 
 # We next define the wavenumber of the problem.
@@ -71,21 +71,21 @@ corners1 = np.array([[-0.5, -1, 0], [-0.5, 1, 0], [-2, 1, 2], [-2, -1, 2]])
 corners2 = np.array([[0.5, -1, 0], [0.5, 1, 0], [2, 1, 2], [2, -1, 2]])
 corners3 = np.array([[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1]])
 
-grid1 = bempp.api.shapes.screen(corners1)
-grid2 = bempp.api.shapes.screen(corners2)
-grid3 = bempp.api.shapes.screen(corners3)
-grid = bempp.api.grid.union([grid1, grid2, grid3])
+grid1 = bempp_cl.api.shapes.screen(corners1)
+grid2 = bempp_cl.api.shapes.screen(corners2)
+grid3 = bempp_cl.api.shapes.screen(corners3)
+grid = bempp_cl.api.grid.union([grid1, grid2, grid3])
 # -
 
 # We define the spaces of order 0 RWG div-conforming functions and order 0 scaled N&eacute;d&eacute;lec curl-conforming functions.
 
-div_space = bempp.api.function_space(grid, "RWG", 0)
-curl_space = bempp.api.function_space(grid, "SNC", 0)
+div_space = bempp_cl.api.function_space(grid, "RWG", 0)
+curl_space = bempp_cl.api.function_space(grid, "SNC", 0)
 
 # Next, we define the Maxwell electric field boundary operator and the identity operator. For Maxwell problems, the ``domain`` and ``range`` spaces should be div-conforming, while the ``dual_to_range`` space should be curl conforming.
 
-elec = bempp.api.operators.boundary.maxwell.electric_field(div_space, div_space, curl_space, k)
-identity = bempp.api.operators.boundary.sparse.identity(div_space, div_space, curl_space)
+elec = bempp_cl.api.operators.boundary.maxwell.electric_field(div_space, div_space, curl_space, k)
+identity = bempp_cl.api.operators.boundary.sparse.identity(div_space, div_space, curl_space)
 
 # We create a grid function to represent the incident wave. In addition, we define a Python callable with the incident field, which is later used for plotting.
 
@@ -95,18 +95,18 @@ def incident_field(x):
     return np.array([np.exp(1j * k * x[2]), 0.0 * x[2], 0.0 * x[2]])
 
 
-@bempp.api.complex_callable
+@bempp_cl.api.complex_callable
 def tangential_trace(x, n, domain_index, result):
     incident_field = np.array([np.exp(1j * k * x[2]), 0.0 * x[2], 0.0 * x[2]])
     result[:] = np.cross(incident_field, n)
 
 
-trace_fun = bempp.api.GridFunction(div_space, fun=tangential_trace, dual_space=curl_space)
+trace_fun = bempp_cl.api.GridFunction(div_space, fun=tangential_trace, dual_space=curl_space)
 # -
 
 # We use a direct LU solver to solve the system.
 
-from bempp.api.linalg import lu
+from bempp_cl.api.linalg import lu
 
 lambda_data = lu(elec, trace_fun)
 
@@ -122,7 +122,7 @@ points = np.vstack((x.ravel(), y.ravel(), z.ravel()))
 
 # We now initialise the electric field potential operator.
 
-slp_pot = bempp.api.operators.potential.maxwell.electric_field(div_space, points, k)
+slp_pot = bempp_cl.api.operators.potential.maxwell.electric_field(div_space, points, k)
 
 # The following commands now compute the total field by first computing the scattered field from the representation formula then adding the incident field.
 

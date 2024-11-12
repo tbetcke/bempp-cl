@@ -29,11 +29,11 @@
 # ## Implementation
 # We start with the usual imports and set the plotting backend to Jupyter Notebook.
 
-import bempp.api
+import bempp_cl.api
 
 # We now define the domain. We use a standard unit cube. In the corresponding function all sides of the cube are already associated with different domain indices. We associate the indices 1 and 3 with the Dirichlet boundary and the other indices with the neumann boundary.
 
-grid = bempp.api.shapes.cube()
+grid = bempp_cl.api.shapes.cube()
 dirichlet_segments = [1, 3]
 neumann_segments = [2, 4, 5, 6]
 
@@ -50,66 +50,68 @@ neumann_segments = [2, 4, 5, 6]
 # * The ``dirichlet_space_neumann_segment`` is defined similarly to the ``dirichlet_space_dirichlet_segment`` but on the open segment $\Gamma_N$. Hence, we require that ``include_boundary_dofs`` is false, which is the default.
 
 # +
-global_neumann_space = bempp.api.function_space(grid, "DP", 0)
-global_dirichlet_space = bempp.api.function_space(grid, "P", 1)
+global_neumann_space = bempp_cl.api.function_space(grid, "DP", 0)
+global_dirichlet_space = bempp_cl.api.function_space(grid, "P", 1)
 
-neumann_space_dirichlet_segment = bempp.api.function_space(grid, "DP", 0, segments=dirichlet_segments)
+neumann_space_dirichlet_segment = bempp_cl.api.function_space(grid, "DP", 0, segments=dirichlet_segments)
 
-neumann_space_neumann_segment = bempp.api.function_space(grid, "DP", 0, segments=neumann_segments)
+neumann_space_neumann_segment = bempp_cl.api.function_space(grid, "DP", 0, segments=neumann_segments)
 
-dirichlet_space_dirichlet_segment = bempp.api.function_space(
+dirichlet_space_dirichlet_segment = bempp_cl.api.function_space(
     grid, "P", 1, segments=dirichlet_segments, include_boundary_dofs=True, truncate_at_segment_edge=False
 )
 
-dirichlet_space_neumann_segment = bempp.api.function_space(grid, "P", 1, segments=neumann_segments)
+dirichlet_space_neumann_segment = bempp_cl.api.function_space(grid, "P", 1, segments=neumann_segments)
 
-dual_dirichlet_space = bempp.api.function_space(grid, "P", 1, segments=dirichlet_segments, include_boundary_dofs=True)
+dual_dirichlet_space = bempp_cl.api.function_space(
+    grid, "P", 1, segments=dirichlet_segments, include_boundary_dofs=True
+)
 # -
 
 # In the following, we define all operators on the corresponding spaces and the overall blocked operator.
 
 # +
-slp_DD = bempp.api.operators.boundary.laplace.single_layer(
+slp_DD = bempp_cl.api.operators.boundary.laplace.single_layer(
     neumann_space_dirichlet_segment, dirichlet_space_dirichlet_segment, neumann_space_dirichlet_segment
 )
 
-dlp_DN = bempp.api.operators.boundary.laplace.double_layer(
+dlp_DN = bempp_cl.api.operators.boundary.laplace.double_layer(
     dirichlet_space_neumann_segment, dirichlet_space_dirichlet_segment, neumann_space_dirichlet_segment
 )
 
-adlp_ND = bempp.api.operators.boundary.laplace.adjoint_double_layer(
+adlp_ND = bempp_cl.api.operators.boundary.laplace.adjoint_double_layer(
     neumann_space_dirichlet_segment, neumann_space_neumann_segment, dirichlet_space_neumann_segment
 )
 
-hyp_NN = bempp.api.operators.boundary.laplace.hypersingular(
+hyp_NN = bempp_cl.api.operators.boundary.laplace.hypersingular(
     dirichlet_space_neumann_segment, neumann_space_neumann_segment, dirichlet_space_neumann_segment
 )
 
-slp_DN = bempp.api.operators.boundary.laplace.single_layer(
+slp_DN = bempp_cl.api.operators.boundary.laplace.single_layer(
     neumann_space_neumann_segment, dirichlet_space_dirichlet_segment, neumann_space_dirichlet_segment
 )
 
-dlp_DD = bempp.api.operators.boundary.laplace.double_layer(
+dlp_DD = bempp_cl.api.operators.boundary.laplace.double_layer(
     dirichlet_space_dirichlet_segment, dirichlet_space_dirichlet_segment, neumann_space_dirichlet_segment
 )
 
-id_DD = bempp.api.operators.boundary.sparse.identity(
+id_DD = bempp_cl.api.operators.boundary.sparse.identity(
     dirichlet_space_dirichlet_segment, dirichlet_space_dirichlet_segment, neumann_space_dirichlet_segment
 )
 
-adlp_NN = bempp.api.operators.boundary.laplace.adjoint_double_layer(
+adlp_NN = bempp_cl.api.operators.boundary.laplace.adjoint_double_layer(
     neumann_space_neumann_segment, neumann_space_neumann_segment, dirichlet_space_neumann_segment
 )
 
-id_NN = bempp.api.operators.boundary.sparse.identity(
+id_NN = bempp_cl.api.operators.boundary.sparse.identity(
     neumann_space_neumann_segment, neumann_space_neumann_segment, dirichlet_space_neumann_segment
 )
 
-hyp_ND = bempp.api.operators.boundary.laplace.hypersingular(
+hyp_ND = bempp_cl.api.operators.boundary.laplace.hypersingular(
     dirichlet_space_dirichlet_segment, neumann_space_neumann_segment, dirichlet_space_neumann_segment
 )
 
-blocked = bempp.api.BlockedOperator(2, 2)
+blocked = bempp_cl.api.BlockedOperator(2, 2)
 
 blocked[0, 0] = slp_DD
 blocked[0, 1] = -dlp_DN
@@ -121,21 +123,21 @@ blocked[1, 1] = hyp_NN
 
 
 # +
-@bempp.api.real_callable
+@bempp_cl.api.real_callable
 def dirichlet_data(x, n, domain_index, res):
     res[0] = 1
 
 
-@bempp.api.real_callable
+@bempp_cl.api.real_callable
 def neumann_data(x, n, domain_index, res):
     res[0] = 1
 
 
-dirichlet_grid_fun = bempp.api.GridFunction(
+dirichlet_grid_fun = bempp_cl.api.GridFunction(
     dirichlet_space_dirichlet_segment, fun=dirichlet_data, dual_space=dual_dirichlet_space
 )
 
-neumann_grid_fun = bempp.api.GridFunction(
+neumann_grid_fun = bempp_cl.api.GridFunction(
     neumann_space_neumann_segment, fun=neumann_data, dual_space=dirichlet_space_neumann_segment
 )
 
@@ -145,24 +147,24 @@ rhs_fun2 = -hyp_ND * dirichlet_grid_fun + (0.5 * id_NN - adlp_NN) * neumann_grid
 
 # We can now discretise and solve the blocked operator system. We solve without preconditioner. This would cause problems if we were to further increase the degree of the basis functions. Note that Bempp automatically handles the block structure correctly. We have a $2\times 2$ system of operators, hand over as right-hand side two grid functions, and are returned two grid functions as solution.
 
-(neumann_solution, dirichlet_solution), _ = bempp.api.linalg.gmres(blocked, [rhs_fun1, rhs_fun2])
+(neumann_solution, dirichlet_solution), _ = bempp_cl.api.linalg.gmres(blocked, [rhs_fun1, rhs_fun2])
 
 # We want to recombine the computed Dirichlet and Neumann data with the corresponding known data in order to get Dirichlet and Neumann grid functions defined on the whole grid. To achieve this we define identity operators from $\Gamma_N$ and $\Gamma_D$ into the global Dirichlet and Neumann spaces.
 
 # +
-neumann_imbedding_dirichlet_segment = bempp.api.operators.boundary.sparse.identity(
+neumann_imbedding_dirichlet_segment = bempp_cl.api.operators.boundary.sparse.identity(
     neumann_space_dirichlet_segment, global_neumann_space, global_neumann_space
 )
 
-neumann_imbedding_neumann_segment = bempp.api.operators.boundary.sparse.identity(
+neumann_imbedding_neumann_segment = bempp_cl.api.operators.boundary.sparse.identity(
     neumann_space_neumann_segment, global_neumann_space, global_neumann_space
 )
 
-dirichlet_imbedding_dirichlet_segment = bempp.api.operators.boundary.sparse.identity(
+dirichlet_imbedding_dirichlet_segment = bempp_cl.api.operators.boundary.sparse.identity(
     dirichlet_space_dirichlet_segment, global_dirichlet_space, global_dirichlet_space
 )
 
-dirichlet_imbedding_neumann_segment = bempp.api.operators.boundary.sparse.identity(
+dirichlet_imbedding_neumann_segment = bempp_cl.api.operators.boundary.sparse.identity(
     dirichlet_space_neumann_segment, global_dirichlet_space, global_dirichlet_space
 )
 
@@ -176,11 +178,11 @@ neumann = neumann_imbedding_neumann_segment * neumann_grid_fun + neumann_imbeddi
 
 # Finally, we export the solution as a Gmsh file. Bempp infers the file type from the file extension.
 
-bempp.api.export("mixed_dirichlet_neumann_laplace_solution.msh", grid_function=dirichlet)
+bempp_cl.api.export("mixed_dirichlet_neumann_laplace_solution.msh", grid_function=dirichlet)
 
-# Alternatively, we could export a VTK file using the following command. More details on exporting and plotting in Bempp can be found [in the Bempp Handbook](https://bempp.com/handbook/api/using_grids.html#plotting-and-exporting-grids)
+# Alternatively, we could export a VTK file using the following command. More details on exporting and plotting in Bempp can be found [in the Bempp Handbook](https://bempp_cl.com/handbook/api/using_grids.html#plotting-and-exporting-grids)
 
-bempp.api.export("mixed_dirichlet_neumann_laplace_solution.vtk", grid_function=dirichlet)
+bempp_cl.api.export("mixed_dirichlet_neumann_laplace_solution.vtk", grid_function=dirichlet)
 
 # It should look as follows.
 

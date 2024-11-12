@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from bempp.api.utils import interpolation
+from bempp_cl.api.utils import interpolation
 
 
 def test_evaluation_of_laplace_kernel_on_interp_points():
@@ -24,14 +24,12 @@ def test_evaluation_of_laplace_kernel_on_interp_points():
 
     pointsy = interpolation.chebychev_tensor_points_3d(lboundy, uboundy, nodes)
 
-    expected = np.empty((nnodes ** 3, nnodes ** 3), dtype="float64")
-    for i in range(nnodes ** 3):
-        for j in range(nnodes ** 3):
+    expected = np.empty((nnodes**3, nnodes**3), dtype="float64")
+    for i in range(nnodes**3):
+        for j in range(nnodes**3):
             expected[i, j] = 1.0 / (4 * np.pi * np.linalg.norm(pointsx[i] - pointsy[j]))
 
-    actual = interpolation.evaluate_kernel_on_interpolation_points(
-        "laplace", lboundx, uboundx, lboundy, uboundy, nodes
-    )
+    actual = interpolation.evaluate_kernel_on_interpolation_points("laplace", lboundx, uboundx, lboundy, uboundy, nodes)
 
     np.testing.assert_allclose(actual, expected, rtol=1e-6)
 
@@ -50,14 +48,10 @@ def test_evaluation_tensor_interp_polynomial():
     eval_grid = np.linspace(-1, 1, 8)
     eval_x, eval_y, eval_z = np.meshgrid(eval_grid, eval_grid, eval_grid)
 
-    evaluation_points = np.vstack(
-        [eval_x.flatten(), eval_y.flatten(), eval_z.flatten()]
-    ).T
+    evaluation_points = np.vstack([eval_x.flatten(), eval_y.flatten(), eval_z.flatten()]).T
 
     expected = np.cos(eval_x.flatten() * eval_y.flatten() * eval_z.flatten())
 
-    actual = interpolation.evaluate_tensor_interp_polynomial(
-        nodes, weights, values, evaluation_points
-    )
+    actual = interpolation.evaluate_tensor_interp_polynomial(nodes, weights, values, evaluation_points)
 
     np.testing.assert_allclose(actual, expected, rtol=1e-6)

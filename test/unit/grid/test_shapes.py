@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-import bempp.api
+import bempp_cl.api
 
 
 @pytest.mark.parametrize(
@@ -21,4 +21,4 @@ import bempp.api
     ],
 )
 def test_shape(gridname, args, kwargs):
-    getattr(bempp.api.shapes, gridname)(*args, **kwargs)
+    getattr(bempp_cl.api.shapes, gridname)(*args, **kwargs)

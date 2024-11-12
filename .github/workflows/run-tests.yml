@@ -18,7 +18,7 @@ jobs:
       buildneeded: ${{ steps.diff.outputs.changed }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Get main Dockerfile
         run: |
@@ -142,7 +142,7 @@ jobs:
     name: Run style checks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -150,12 +150,13 @@ jobs:
       - run: python3 -m pip install .[style]
         name: Install Bempp with optional style dependencies
       - run: |
-            python3 -m flake8 bempp
-            python3 -m flake8 test
-            python3 -m flake8 examples
-        name: Run flake8 checks
-      - run: python3 -m pydocstyle bempp/api
-        name: Run pydocstyle checks
+            python3 -m ruff check bempp_cl
+            python3 -m ruff check test
+            python3 -m ruff check examples
+            python3 -m ruff format --check bempp_cl
+            python3 -m ruff format --check test
+            python3 -m ruff format --check examples
+        name: Run ruff checks
 
   build-and-test:
     name: Build Bempp and run tests
@@ -166,7 +167,7 @@ jobs:
     runs-on: ubuntu-latest
     container: bempp/cl-dev-env-numba:${{ needs.configure-docker.outputs.dockertag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: python3 -m pip install .[test]
         name: Install Bempp
       - run: python3 -m pytest -n4 --durations=50 test/unit --has-dolfin 0 --has-dolfinx 0 --has-exafmm 1
@@ -181,7 +182,7 @@ jobs:
     runs-on: ubuntu-latest
     container: bempp/cl-dev-env-with-dolfinx-numba:${{ needs.configure-docker.outputs.dockertag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: python3 -m pip install .[test]
         name: Install Bempp
       - run: python3 -m pytest -n4 --durations=50 test/unit --has-dolfin 0 --has-dolfinx 1 --has-exafmm 1
@@ -196,7 +197,7 @@ jobs:
     runs-on: ubuntu-latest
     container: bempp/cl-dev-env-numba:${{ needs.configure-docker.outputs.dockertag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: python3 -m pip install .[test]
         name: Install Bempp
       - run: python3 -m pytest --durations=10 test/validation --has-dolfin 0 --has-dolfinx 0 --has-exafmm 1 --skip ci
@@ -211,7 +212,7 @@ jobs:
     runs-on: ubuntu-latest
     container: bempp/cl-dev-env-numba:${{ needs.configure-docker.outputs.dockertag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: python3 -m pip install .[test]
         name: Install Bempp
       - run: python3 -m pytest examples/test.py --has-dolfin 0 --has-dolfinx 0 --has-exafmm 1
@@ -226,7 +227,7 @@ jobs:
     runs-on: ubuntu-latest
     container: bempp/cl-dev-env-with-dolfinx-numba:${{ needs.configure-docker.outputs.dockertag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: python3 -m pip install .[test]
         name: Install Bempp
       - run: python3 -m pytest examples/test.py --has-dolfin 0 --has-dolfinx 1 --has-exafmm 1 --dolfin-books-only 1

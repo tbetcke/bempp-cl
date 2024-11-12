@@ -1,7 +1,7 @@
 import pytest
 import os
 import json
-import bempp
+import bempp_cl
 
 
 def joinall(*ls):
@@ -25,6 +25,6 @@ def test_version_number_consistency():
         if v2.startswith("v"):
             v2 = v2[1:]
 
-    v3 = bempp.__version__
+    v3 = bempp_cl.__version__
 
     assert v1 == v2 == v3

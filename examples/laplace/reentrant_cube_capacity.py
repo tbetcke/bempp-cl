@@ -42,34 +42,34 @@
 # ## Implementation
 # We start with the usual imports.
 
-import bempp.api
+import bempp_cl.api
 import numpy as np
 
 # The grid re-entrant cube is predefined in the shapes module. By default it refines towards the singular corner. As function space on the grid we choose a simple space of piecewise constant functions.
 
-grid = bempp.api.shapes.reentrant_cube(h=0.02, refinement_factor=1)
-space = bempp.api.function_space(grid, "DP", 0)
+grid = bempp_cl.api.shapes.reentrant_cube(h=0.02, refinement_factor=1)
+space = bempp_cl.api.function_space(grid, "DP", 0)
 
 # Next, we define the right-hand side.
 
 
 # +
-@bempp.api.real_callable
+@bempp_cl.api.real_callable
 def one_fun(x, n, domain_index, res):
     res[0] = 1
 
 
-rhs = bempp.api.GridFunction(space, fun=one_fun)
+rhs = bempp_cl.api.GridFunction(space, fun=one_fun)
 # -
 
 # The following code defines the left-hand side single-layer boundary operator.
 
-op = bempp.api.operators.boundary.laplace.single_layer(space, space, space)
+op = bempp_cl.api.operators.boundary.laplace.single_layer(space, space, space)
 
 # We use GMRES to solve the system. To improve convergence we use a strong form discretisation that automatically preconditions with the mass matrix.
 
 # +
-sol, _, iteration_count = bempp.api.linalg.gmres(op, rhs, use_strong_form=True, return_iteration_count=True)
+sol, _, iteration_count = bempp_cl.api.linalg.gmres(op, rhs, use_strong_form=True, return_iteration_count=True)
 
 print("Number of iterations: {0}".format(iteration_count))
 # -

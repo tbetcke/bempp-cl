@@ -2,8 +2,8 @@
 
 import pytest
 import numpy as np
-import bempp.api
-from bempp.api.external.fenicsx import fenics_to_bempp_trace_data, FenicsOperator
+import bempp_cl.api
+from bempp_cl.api.external.fenicsx import fenics_to_bempp_trace_data, FenicsOperator
 
 
 def test_p1_trace(has_dolfinx):
@@ -26,7 +26,7 @@ def test_p1_trace(has_dolfinx):
 
     fenics_fun = dolfinx.fem.Function(fenics_space)
     fenics_fun.x.array[:] = fenics_coeffs
-    bempp_fun = bempp.api.GridFunction(bempp_space, coefficients=bempp_coeffs)
+    bempp_fun = bempp_cl.api.GridFunction(bempp_space, coefficients=bempp_coeffs)
 
     try:
         tree = dolfinx.geometry.bb_tree(fenics_mesh, 3)

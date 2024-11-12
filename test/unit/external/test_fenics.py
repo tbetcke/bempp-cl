@@ -13,8 +13,8 @@ def test_p1_trace(has_dolfin):
             import dolfin
         except ImportError:
             pytest.skip("DOLFIN must be installed to run this test")
-    import bempp.api
-    from bempp.api.external.fenics import fenics_to_bempp_trace_data
+    import bempp_cl.api
+    from bempp_cl.api.external.fenics import fenics_to_bempp_trace_data
 
     fenics_mesh = dolfin.UnitCubeMesh(2, 2, 2)
     fenics_space = dolfin.FunctionSpace(fenics_mesh, "CG", 1)
@@ -26,7 +26,7 @@ def test_p1_trace(has_dolfin):
 
     fenics_fun = dolfin.Function(fenics_space)
     fenics_fun.vector()[:] = fenics_coeffs
-    bempp_fun = bempp.api.GridFunction(bempp_space, coefficients=bempp_coeffs)
+    bempp_fun = bempp_cl.api.GridFunction(bempp_space, coefficients=bempp_coeffs)
 
     for cell in bempp_space.grid.entity_iterator(0):
         mid = cell.geometry.centroid
@@ -47,8 +47,8 @@ def test_nc1_trace(has_dolfin):
             import dolfin
         except ImportError:
             pytest.skip("DOLFIN must be installed to run this test")
-    import bempp.api
-    from bempp.api.external.fenics import fenics_to_bempp_trace_data
+    import bempp_cl.api
+    from bempp_cl.api.external.fenics import fenics_to_bempp_trace_data
 
     fenics_mesh = dolfin.UnitCubeMesh(2, 2, 2)
     fenics_space = dolfin.FunctionSpace(fenics_mesh, "N1curl", 1)
@@ -60,7 +60,7 @@ def test_nc1_trace(has_dolfin):
 
     fenics_fun = dolfin.Function(fenics_space)
     fenics_fun.vector()[:] = fenics_coeffs
-    bempp_fun = bempp.api.GridFunction(bempp_space, coefficients=bempp_coeffs)
+    bempp_fun = bempp_cl.api.GridFunction(bempp_space, coefficients=bempp_coeffs)
 
     for cell in bempp_space.grid.entity_iterator(0):
         mid = cell.geometry.centroid

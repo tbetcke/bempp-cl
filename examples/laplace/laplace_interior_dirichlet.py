@@ -52,34 +52,34 @@
 # ## Implementation
 # We now demonstrate how to solve this problem with Bempp. We begin by importing Bempp and NumPy.
 
-import bempp.api
+import bempp_cl.api
 import numpy as np
 
 # We next define a mesh or grid. For this problem, we will use the built-in function `sphere` that defines a simple spherical grid.
 
-grid = bempp.api.shapes.sphere(h=0.1)
+grid = bempp_cl.api.shapes.sphere(h=0.1)
 
 # We now define the spaces. For this example we will use two spaces: the space of continuous, piecewise linear functions; and the space of piecewise constant functions. The space of piecewise constant functions has the right smoothness for the unknown Neumann data. We will use continuous, piecewise linear functions to represent the known Dirichlet data.
 
-dp0_space = bempp.api.function_space(grid, "DP", 0)
-p1_space = bempp.api.function_space(grid, "P", 1)
+dp0_space = bempp_cl.api.function_space(grid, "DP", 0)
+p1_space = bempp_cl.api.function_space(grid, "P", 1)
 
 # We can now define the operators. We need the identity, single layer, and double layer boundary operator.
 
-identity = bempp.api.operators.boundary.sparse.identity(p1_space, p1_space, dp0_space)
-dlp = bempp.api.operators.boundary.laplace.double_layer(p1_space, p1_space, dp0_space)
-slp = bempp.api.operators.boundary.laplace.single_layer(dp0_space, p1_space, dp0_space)
+identity = bempp_cl.api.operators.boundary.sparse.identity(p1_space, p1_space, dp0_space)
+dlp = bempp_cl.api.operators.boundary.laplace.double_layer(p1_space, p1_space, dp0_space)
+slp = bempp_cl.api.operators.boundary.laplace.single_layer(dp0_space, p1_space, dp0_space)
 
 # We now define the GridFunction object on the sphere grid that represents the Dirichlet data.
 
 
 # +
-@bempp.api.real_callable
+@bempp_cl.api.real_callable
 def dirichlet_data(x, n, domain_index, result):
     result[0] = 1.0 / (4 * np.pi * ((x[0] - 0.9) ** 2 + x[1] ** 2 + x[2] ** 2) ** (0.5))
 
 
-dirichlet_fun = bempp.api.GridFunction(p1_space, fun=dirichlet_data)
+dirichlet_fun = bempp_cl.api.GridFunction(p1_space, fun=dirichlet_data)
 # -
 
 # We next assemble the right-hand side of the boundary integral equation, given by $$(\tfrac12\mathsf{Id}+\mathsf{K})u.$$
@@ -88,7 +88,7 @@ rhs = (0.5 * identity + dlp) * dirichlet_fun
 
 # We now solve the linear system using a conjugate gradient (CG) method.
 
-neumann_fun, info = bempp.api.linalg.cg(slp, rhs, tol=1e-3)
+neumann_fun, info = bempp_cl.api.linalg.cg(slp, rhs, tol=1e-3)
 
 # We now want to provide a simple plot of the solution in the $(x,y)$ plane for $z=0$. We first define points at which to plot the solution.
 
@@ -99,8 +99,8 @@ points = np.vstack((plot_grid[0].ravel(), plot_grid[1].ravel(), np.zeros(plot_gr
 
 # The variable `points` now contains in its columns the coordinates of the evaluation points. We can now use Green's representation theorem to evaluate the solution on these points. Note in particular the last line of the following code. It is a direct implementation of Green's representation theorem.
 
-slp_pot = bempp.api.operators.potential.laplace.single_layer(dp0_space, points)
-dlp_pot = bempp.api.operators.potential.laplace.double_layer(p1_space, points)
+slp_pot = bempp_cl.api.operators.potential.laplace.single_layer(dp0_space, points)
+dlp_pot = bempp_cl.api.operators.potential.laplace.double_layer(p1_space, points)
 u_evaluated = slp_pot * neumann_fun - dlp_pot * dirichlet_fun
 
 # We now plot the 2D slice of the solution. For a full three dimensional visualization, Bempp can export the data to Gmsh. Since the solution decays quickly, we use a logarithmic plot.

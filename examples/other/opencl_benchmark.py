@@ -39,14 +39,14 @@
 # ## General Setup
 # In this section we define the general objects that we need in all benchmarks.
 
-import bempp.api
+import bempp_cl.api
 import numpy as np
 import pandas as pd
 
-grid = bempp.api.shapes.regular_sphere(5)
-p1_space = bempp.api.function_space(grid, "P", 1)
-rwg_space = bempp.api.function_space(grid, "RWG", 0)
-snc_space = bempp.api.function_space(grid, "SNC", 0)
+grid = bempp_cl.api.shapes.regular_sphere(5)
+p1_space = bempp_cl.api.function_space(grid, "P", 1)
+rwg_space = bempp_cl.api.function_space(grid, "RWG", 0)
+snc_space = bempp_cl.api.function_space(grid, "SNC", 0)
 
 
 # +
@@ -74,7 +74,7 @@ def benchmark_potential_operator(operator, fun, precision):
 # We first define the boundary operators that we want to test. We make them dependent only on a *precision* argument.
 
 # +
-from bempp.api.operators import boundary
+from bempp_cl.api.operators import boundary
 
 k = 1.0
 
@@ -109,11 +109,11 @@ df = pd.DataFrame(index=operator_labels, columns=pd.MultiIndex.from_product([dri
 
 for precision in ["single", "double"]:
     if precision == "single":
-        bempp.api.VECTORIZATION_MODE = "vec16"
+        bempp_cl.api.VECTORIZATION_MODE = "vec16"
     else:
-        bempp.api.VECTORIZATION_MODE = "vec8"
+        bempp_cl.api.VECTORIZATION_MODE = "vec8"
     for driver_name in driver_labels:
-        bempp.api.set_default_cpu_device_by_name(driver_name)
+        bempp_cl.api.set_default_cpu_device_by_name(driver_name)
         for op in operators:
             op(precision).weak_form()
 
@@ -121,12 +121,12 @@ for precision in ["single", "double"]:
 
 for precision in ["single", "double"]:
     if precision == "single":
-        bempp.api.VECTORIZATION_MODE = "vec16"
+        bempp_cl.api.VECTORIZATION_MODE = "vec16"
     else:
-        bempp.api.VECTORIZATION_MODE = "vec8"
+        bempp_cl.api.VECTORIZATION_MODE = "vec8"
     for driver_name in driver_labels:
         print(f"Driver: {driver_name}")
-        bempp.api.set_default_cpu_device_by_name(driver_name)
+        bempp_cl.api.set_default_cpu_device_by_name(driver_name)
         for label, op in zip(operator_labels, operators):
             df.loc[label, (driver_name, precision)] = benchmark_boundary_operator(op, precision)
 
@@ -143,7 +143,7 @@ points /= np.linalg.norm(points, axis=0)
 # Let us define the operators and functions.
 
 # +
-from bempp.api.operators import potential
+from bempp_cl.api.operators import potential
 
 k = 1.0
 
@@ -157,12 +157,12 @@ operators = [
 ]
 
 functions = [
-    bempp.api.GridFunction.from_ones(p1_space),
-    bempp.api.GridFunction.from_ones(p1_space),
-    bempp.api.GridFunction.from_ones(p1_space),
-    bempp.api.GridFunction.from_ones(p1_space),
-    bempp.api.GridFunction.from_ones(rwg_space),
-    bempp.api.GridFunction.from_ones(rwg_space),
+    bempp_cl.api.GridFunction.from_ones(p1_space),
+    bempp_cl.api.GridFunction.from_ones(p1_space),
+    bempp_cl.api.GridFunction.from_ones(p1_space),
+    bempp_cl.api.GridFunction.from_ones(p1_space),
+    bempp_cl.api.GridFunction.from_ones(rwg_space),
+    bempp_cl.api.GridFunction.from_ones(rwg_space),
 ]
 # -
 
@@ -170,11 +170,11 @@ functions = [
 
 for precision in ["single", "double"]:
     if precision == "single":
-        bempp.api.VECTORIZATION_MODE = "vec16"
+        bempp_cl.api.VECTORIZATION_MODE = "vec16"
     else:
-        bempp.api.VECTORIZATION_MODE = "vec8"
+        bempp_cl.api.VECTORIZATION_MODE = "vec8"
     for driver_name in driver_labels:
-        bempp.api.set_default_cpu_device_by_name(driver_name)
+        bempp_cl.api.set_default_cpu_device_by_name(driver_name)
         for op, fun in zip(operators, functions):
             res = op(precision) @ fun
 
@@ -198,21 +198,21 @@ df = pd.DataFrame(index=operator_labels, columns=pd.MultiIndex.from_product([dri
 # Finally, we run the actual tests.
 
 # +
-bempp.api.set_default_gpu_device_by_name("NVIDIA CUDA")
+bempp_cl.api.set_default_gpu_device_by_name("NVIDIA CUDA")
 
 for precision in ["single", "double"]:
     if precision == "single":
-        bempp.api.VECTORIZATION_MODE = "vec16"
+        bempp_cl.api.VECTORIZATION_MODE = "vec16"
     else:
-        bempp.api.VECTORIZATION_MODE = "vec8"
+        bempp_cl.api.VECTORIZATION_MODE = "vec8"
     for driver_name in driver_labels:
         print(f"Driver: {driver_name}")
         if driver_name == "NVIDIA CUDA":
-            bempp.api.POTENTIAL_OPERATOR_DEVICE_TYPE = "gpu"
-            bempp.api.VECTORIZATION_MODE = "novec"
+            bempp_cl.api.POTENTIAL_OPERATOR_DEVICE_TYPE = "gpu"
+            bempp_cl.api.VECTORIZATION_MODE = "novec"
         else:
-            bempp.api.POTENTIAL_OPERATOR_DEVICE_TYPE = "cpu"
-            bempp.api.set_default_cpu_device_by_name(driver_name)
+            bempp_cl.api.POTENTIAL_OPERATOR_DEVICE_TYPE = "cpu"
+            bempp_cl.api.set_default_cpu_device_by_name(driver_name)
         for label, op, fun in zip(operator_labels, operators, functions):
             df.loc[label, (driver_name, precision)] = benchmark_potential_operator(op, fun, precision)
 # -
